@@ -8,7 +8,7 @@ app.use(bodyParser.urlencoded({extended: true}))
 const MongoClient = require('mongodb').MongoClient
 ObjectId = require('mongodb').ObjectId
 
-const myurl = 'mongodb://localhost:27017';
+const myurl = 'mongodb+srv://bk:lf5pmuCgYCoViWsD@ex-multer-01.ccmq2.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
 
 
 var storage = multer.diskStorage({
@@ -16,13 +16,18 @@ var storage = multer.diskStorage({
     cb(null, 'uploads')
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now())
+    // cb(null, Date.now() + '-'+file.originalname )
+    cb(null,file.originalname )
   }
 })
 
 var upload = multer({ storage: storage })
 
-MongoClient.connect(myurl, (err, client) => {
+MongoClient.connect(myurl, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  // useCreateIndex: true,
+}, (err, client) => {
   if (err) return console.log(err)
   db = client.db('test') 
   app.listen(3000, () => {
@@ -35,6 +40,10 @@ app.get('/',function(req,res){
 
 });
 
+app.get('/x',function(req,res){
+  res.sendFile(__dirname + '/uploads/left.png');
+
+});
 // upload single file
 
 app.post('/uploadfile', upload.single('myFile'), (req, res, next) => {
@@ -87,6 +96,7 @@ db.collection('mycollection').insertOne(finalImg, (err, result) => {
 
 
 app.get('/photos', (req, res) => {
+
 db.collection('mycollection').find().toArray((err, result) => {
 
   	const imgArray= result.map(element => element._id);
@@ -94,8 +104,7 @@ db.collection('mycollection').find().toArray((err, result) => {
 
    if (err) return console.log(err)
    res.send(imgArray)
-
-  
+   
    
   })
 });
